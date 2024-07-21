@@ -4,7 +4,7 @@ from torch.autograd import Variable
 import glob
 import cv2
 from PIL import Image as PILImage
-import Model as Net
+import ibl.models.espnet as Net
 import os
 import time
 from argparse import ArgumentParser
@@ -139,12 +139,9 @@ def main(args):
             exit(-1)
         modelA.load_state_dict(torch.load(model_weight_file))
     elif args.modelType == 1:
-        modelA = Net.ESPNet(classes, p, q)  # Net.Mobile_SegNetDilatedIA_C_stage1(20)
-        model_weight_file = args.weightsDir + os.sep + 'decoder' + os.sep + 'espnet_p_' + str(p) + '_q_' + str(q) + '.pth'
-        if not os.path.isfile(model_weight_file):
-            print('Pre-trained model file does not exist. Please check ../pretrained/decoder folder')
-            exit(-1)
-        modelA.load_state_dict(torch.load(model_weight_file))
+        model_weight_file = args.weightsDir + os.sep + 'espnet_p_' + str(p) + '_q_' + str(q) + '.pth'
+        print(model_weight_file)
+        modelA = Net.ESPNet(classes, p, q,encoderFile=model_weight_file ) # Net.Mobile_SegNetDilatedIA_C_stage1(20)
     else:
         print('Model not supported')
     # modelA = torch.nn.DataParallel(modelA)
@@ -163,17 +160,17 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--model', default="ESPNet", help='Model name')
-    parser.add_argument('--data_dir', default="./data", help='Data directory')
-    parser.add_argument('--img_extn', default="jpg", help='RGB Image format')
+    parser.add_argument('--data_dir', default="/home/leo/usman_ws/datasets/examples-espnet/data", help='Data directory')
+    parser.add_argument('--img_extn', default="png", help='RGB Image format')
     parser.add_argument('--inWidth', type=int, default=1024, help='Width of RGB image')
     parser.add_argument('--inHeight', type=int, default=512, help='Height of RGB image')
     parser.add_argument('--scaleIn', type=int, default=1, help='For ESPNet-C, scaleIn=8. For ESPNet, scaleIn=1')
     parser.add_argument('--modelType', type=int, default=1, help='1=ESPNet, 2=ESPNet-C')
-    parser.add_argument('--savedir', default='./results', help='directory to save the results')
+    parser.add_argument('--savedir', default='/home/leo/usman_ws/datasets/examples-espnet/results', help='directory to save the results')
     parser.add_argument('--gpu', default=True, type=bool, help='Run on CPU or GPU. If TRUE, then GPU.')
     parser.add_argument('--decoder', type=bool, default=True,
                         help='True if ESPNet. False for ESPNet-C')  # False for encoder
-    parser.add_argument('--weightsDir', default='../pretrained/', help='Pretrained weights directory.')
+    parser.add_argument('--weightsDir', default='/home/leo/usman_ws/datasets/espnet-encoder/', help='Pretrained weights directory.')
     parser.add_argument('--p', default=2, type=int, help='depth multiplier. Supported only 2')
     parser.add_argument('--q', default=8, type=int, help='depth multiplier. Supported only 3, 5, 8')
     parser.add_argument('--cityFormat', default=True, type=bool, help='If you want to convert to cityscape '

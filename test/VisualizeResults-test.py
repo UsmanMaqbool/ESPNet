@@ -37,27 +37,41 @@ def relabel(img):
     :param img:
     :return:
     '''
+
+    ### Road + Sidewalk
+    img[img == 1] = 1
+    img[img == 0] = 1
+
+    ### building + Wall + fence
+    img[img == 4] = 4
+    img[img == 3] = 4
+    img[img == 2] = 4
+
+    ### Pole + Traffic Light + Traffic Signal
+    img[img == 7] = 7
+    img[img == 6] = 7
+    img[img == 5] = 7
+    
+    ### Terrain + vegetation 
+    img[img == 9] = 9
+    img[img == 8] = 9
+
+    ### Sky
+    img[img == 10] = 10
+ 
+    ### Don't need
     img[img == 19] = 255
-    img[img == 18] = 33
-    img[img == 17] = 32
-    img[img == 16] = 31
-    img[img == 15] = 28
-    img[img == 14] = 27
-    img[img == 13] = 26
-    img[img == 12] = 25
-    img[img == 11] = 24
-    img[img == 10] = 23
-    img[img == 9] = 22
-    img[img == 8] = 21
-    img[img == 7] = 20
-    img[img == 6] = 19
-    img[img == 5] = 17
-    img[img == 4] = 13
-    img[img == 3] = 12
-    img[img == 2] = 11
-    img[img == 1] = 8
-    img[img == 0] = 7
-    img[img == 255] = 0
+    img[img == 18] = 255
+    img[img == 17] = 255
+    img[img == 16] = 255
+    img[img == 15] = 255
+    img[img == 14] = 255
+    img[img == 13] = 255
+    img[img == 12] = 255
+    img[img == 11] = 255
+
+
+   
     return img
 
 
@@ -95,6 +109,10 @@ def evaluateModel(args, model, up, image_list):
             img_out = up(img_out)
 
         classMap_numpy = img_out[0].max(0)[1].byte().cpu().data.numpy()
+        classMap_numpy = relabel(classMap_numpy.astype(np.uint8))
+
+
+
 
         if i % 100 == 0:
             print(i)
@@ -163,17 +181,17 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--model', default="ESPNet", help='Model name')
-    parser.add_argument('--data_dir', default="./data", help='Data directory')
-    parser.add_argument('--img_extn', default="jpg", help='RGB Image format')
+    parser.add_argument('--data_dir', default="./test/data", help='Data directory')
+    parser.add_argument('--img_extn', default="png", help='RGB Image format')
     parser.add_argument('--inWidth', type=int, default=1024, help='Width of RGB image')
     parser.add_argument('--inHeight', type=int, default=512, help='Height of RGB image')
     parser.add_argument('--scaleIn', type=int, default=1, help='For ESPNet-C, scaleIn=8. For ESPNet, scaleIn=1')
     parser.add_argument('--modelType', type=int, default=1, help='1=ESPNet, 2=ESPNet-C')
-    parser.add_argument('--savedir', default='./results', help='directory to save the results')
+    parser.add_argument('--savedir', default='./test/results', help='directory to save the results')
     parser.add_argument('--gpu', default=True, type=bool, help='Run on CPU or GPU. If TRUE, then GPU.')
     parser.add_argument('--decoder', type=bool, default=True,
                         help='True if ESPNet. False for ESPNet-C')  # False for encoder
-    parser.add_argument('--weightsDir', default='../pretrained/', help='Pretrained weights directory.')
+    parser.add_argument('--weightsDir', default='/home/leo/usman_ws/ESPNet/pretrained/', help='Pretrained weights directory.')
     parser.add_argument('--p', default=2, type=int, help='depth multiplier. Supported only 2')
     parser.add_argument('--q', default=8, type=int, help='depth multiplier. Supported only 3, 5, 8')
     parser.add_argument('--cityFormat', default=True, type=bool, help='If you want to convert to cityscape '
